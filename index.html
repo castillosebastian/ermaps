@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mapa Personalizado</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://developers.google.com/datastudio/sdk/js/dscc.js"></script>
+  <style>
+    body, #map { margin: 0; padding: 0; width: 100%; height: 100%; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <script>
+    // Espera a recibir datos de Looker Studio
+    dscc.subscribeToData(function(data) {
+      if (!data.configParams || !data.configParams.geoJsonUrl) {
+        return; // No hacer nada si no hay URL configurada
+      }
+
+      let geoJsonUrl = data.configParams.geoJsonUrl;
+      let geoJsonKey = data.configParams.joinKey; // La propiedad del GeoJSON para unir
+
+      // Busca los datos en un formato fácil de usar: {clave: metrica}
+      let metricData = {};
+      data.rows.forEach(function(row) {
+        metricData[row.joinKey[0]] = row.metric[0];
+      });
+
+      // Pide el archivo GeoJSON
+      fetch(geoJsonUrl)
+        .then(response => response.json())
+        .then(geojson => {
+          // Limpia el mapa anterior si existe
+          const container = L.DomUtil.get('map');
+          if(container != null){
+            container._leaflet_id = null;
+          }
+
+          // Crea el mapa y lo centra en los polígonos
+          let map = L.map('map').fitBounds(L.geoJSON(geojson).getBounds());
+
+          // Añade la capa base de OpenStreetMap
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          }).addTo(map);
+
+          // Añade los polígonos GeoJSON al mapa
+          L.geoJSON(geojson, {
+            // ESTILO: Colorea cada polígono según la métrica
+            style: function(feature) {
+              const value = metricData[feature.properties[geoJsonKey]];
+              // Aquí puedes definir una escala de colores compleja
+              const fillColor = value > 1000 ? '#800026' : '#FD8D3C'; 
+              return {
+                fillColor: fillColor,
+                weight: 2,
+                opacity: 1,
+                color: 'white',
+                fillOpacity: 0.7
+              };
+            },
+            // INTERACTIVIDAD: Muestra un popup al hacer clic
+            onEachFeature: function(feature, layer) {
+              const key = feature.properties[geoJsonKey];
+              const value = metricData[key] || 'Sin datos';
+              layer.bindPopup(`<b>${key}</b><br>Métrica: ${value}`);
+            }
+          }).addTo(map);
+        });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+{
+    "dataStudio": {
+      "name": "Mapa Coroplético Personalizado",
+      "logoUrl": "https://raw.githubusercontent.com/google/ds-component/master/images/viz_icon.png",
+      "company": "Castillo Sebastian",
+      "companyUrl": "https://github.com/castillosebastian",
+      "addonUrl": "https://castillosebastian.github.io/ermaps/",
+      "supportUrl": "https://github.com/castillosebastian/ermaps/issues"
+    },
+    "config": [
+      {
+        "name": "geoJsonUrl",
+        "displayName": "URL del archivo GeoJSON",
+        "type": "TEXTINPUT"
+      },
+      {
+        "name": "joinKey",
+        "displayName": "Clave de unión del GeoJSON",
+        "type": "TEXTINPUT"
+      }
+    ],
+    "dataSchema": [
+      {
+        "name": "joinKey",
+        "label": "Clave de Unión de Datos",
+        "dataType": "STRING",
+        "semantics": {
+          "conceptType": "DIMENSION"
+        }
+      },
+      {
+        "name": "metric",
+        "label": "Métrica",
+        "dataType": "NUMBER",
+        "semantics": {
+          "conceptType": "METRIC"
+        }
+      }
+    ]
+  }
+  
